@@ -171,7 +171,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controller: {fileID: 11403148}
-  speed: 20
+  speed: 40
+  maxSpeed: 60
+  minSpeed: 20
   jumpForce: 10
   gravity: -20
   laneDistance: 2.5

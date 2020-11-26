@@ -25,6 +25,7 @@ public class Coin : MonoBehaviour
         if (other.tag == "Player")
         {
             Destroy(gameObject);
+            FindObjectOfType<AudioManager>().PlaySound("Coin");
             Debug.Log("Coin Picked Up!");
         }
     }

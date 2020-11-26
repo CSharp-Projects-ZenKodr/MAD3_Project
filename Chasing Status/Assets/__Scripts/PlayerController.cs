@@ -13,6 +13,8 @@ public class PlayerController : MonoBehaviour
     // Maximum and Minimum speeds
     private float maxSpeed = 60;
     private float minSpeed = 20;
+    // Rate of which the player character drops back down to the ground
+    private int dropSpeed = 20;
 
     // Character movement speed
     [SerializeField]
@@ -35,6 +37,11 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!GameManager.isGameRunning)
+        {
+            return;
+        }
+
         // Gets the player moveing forward.
         direction.z = speed;
 
@@ -51,8 +58,6 @@ public class PlayerController : MonoBehaviour
         {
             targetPostition += Vector3.right * laneDistance;
         }
-
-        //transform.position = Vector3.Lerp(transform.position, targetPostition, 80 * Time.fixedDeltaTime);
         
         if (transform.position == targetPostition)
         {
@@ -75,6 +80,10 @@ public class PlayerController : MonoBehaviour
     // FixedUpdate called once per frame
     private void FixedUpdate()
     {
+        if (!GameManager.isGameRunning)
+        {
+            return;
+        }
         controller.Move(direction * Time.fixedDeltaTime);
     }
 
@@ -98,19 +107,28 @@ public class PlayerController : MonoBehaviour
 
 
         // If W is pressed increase the players speed up and never above maxSpeed
-        if (Input.GetKeyDown(KeyCode.W))
+        if (Input.GetKeyDown(KeyCode.W) && controller.isGrounded)
             speed = speed * 2;
             if (speed >= maxSpeed)
                 speed = maxSpeed;
 
         // If S is pressed decrease the players speed down by half and never below minSpeed
-        if (Input.GetKeyDown(KeyCode.S))
+        if (Input.GetKeyDown(KeyCode.S) && controller.isGrounded)
             speed = speed / 2;
             if (speed <= minSpeed)
                 speed = minSpeed;
 
+        // If S is pressed and player is not ground slam the player back down to the ground
+        if (!controller.isGrounded && Input.GetKeyDown(KeyCode.S))
+        {
+            // Multiples the y direction with gravity and a dropSpeed to bring player down, using Time.deltaTime for smoothing
+            direction.y += (gravity * dropSpeed) * Time.deltaTime;
+            Debug.Log("Put me down!");
+        }
+    
     }
 
+    // Jump method increases the characters Y direction simulating a jump
     private void Jump()
     {
         direction.y = jumpForce;

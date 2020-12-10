@@ -4,13 +4,14 @@ using UnityEngine;
 
 public class Road_Manager : MonoBehaviour
 {
+    public static Road_Manager Instance { get; private set; }
+
     // New array of game objects made up of roadPrefabs
     public GameObject[] roadPrefabs;
 
     // Checkpoint game object
     public GameObject checkPoint;
-
-    private List<GameObject> activeRoads = new List<GameObject>();
+    public List<GameObject> activeRoads = new List<GameObject>();
 
     // The z position of the roadPrefabs
     public float zSpawnLoc = 0;
@@ -20,6 +21,20 @@ public class Road_Manager : MonoBehaviour
     public int numberOfRoads = 4;
     // Player transform position 
     public Transform playerTransform;
+
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        } else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -63,7 +78,7 @@ public class Road_Manager : MonoBehaviour
         activeRoads.Add(gameObj);
         zSpawnLoc += roadLength;
     }
-
+    
     public void SpawnCheckpoint()
     {
         GameObject cp = Instantiate(checkPoint, transform.forward * zSpawnLoc, transform.rotation);
@@ -75,6 +90,16 @@ public class Road_Manager : MonoBehaviour
     {
         Destroy(activeRoads[0]);
         activeRoads.RemoveAt(0);
+    }
+
+    public bool IsCheckpoint()
+    {
+        if (activeRoads[0].name.Contains("Tile_Checkpoint")) {
+            return true;
+        } else
+        {
+            return false;
+        }
     }
 
 }

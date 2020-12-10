@@ -28,6 +28,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     public float laneDistance = 4;
 
+    public ParticleSystem electricExplo;
+    bool particleSystemPlayed = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -80,6 +83,11 @@ public class PlayerController : MonoBehaviour
     // FixedUpdate called once per frame
     private void FixedUpdate()
     {
+        if(particleSystemPlayed == true)
+        {
+            electricExplo.Stop();
+            particleSystemPlayed = false;
+        }
         if (!GameManager.isGameRunning)
         {
             return;
@@ -136,9 +144,15 @@ public class PlayerController : MonoBehaviour
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        if(hit.gameObject.tag == "Obstacles")
+        if (hit.gameObject.tag == "Obstacles")
         {
-            GameManager.gameOver = true;
+            if (particleSystemPlayed == false) {
+                electricExplo.Play();
+                particleSystemPlayed = true;
+            }
+            
+            Destroy(hit.gameObject);
+            speed = minSpeed;
         }
     }
 }

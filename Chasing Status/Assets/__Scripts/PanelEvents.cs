@@ -12,6 +12,6 @@ public class PanelEvents : MonoBehaviour
 
     public void QuitGame()
     {
-        Application.Quit();
+        SceneManager.LoadScene("Main_Menu");
     }
 }

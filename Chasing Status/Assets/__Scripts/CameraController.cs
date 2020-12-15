@@ -5,13 +5,13 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     [SerializeField]
-    public Transform target;
-
-    private Vector3 offset;
+    public Transform target; // Sets the tranform of the target (player)
+    private Vector3 offset; // Sets the cameras offset from the target (player)
 
     // Start is called before the first frame update
     void Start()
     {
+        // Sets offset of the camera from the players position
         offset = transform.position - target.position;
     }
 
@@ -20,7 +20,6 @@ public class CameraController : MonoBehaviour
     {
         // Create a new Position based on the offset
         Vector3 newPosition = new Vector3(transform.position.x, transform.position.y, offset.z + target.position.z);
-
         // Apply new position
         transform.position = newPosition;
     }

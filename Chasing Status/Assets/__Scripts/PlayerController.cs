@@ -11,8 +11,8 @@ public class PlayerController : MonoBehaviour
     // Set the desired lane to the middle: left=1, middle=1, right=2
     private int desiredLane = 1;
     // Maximum and Minimum speeds
-    private float maxSpeed = 60;
-    private float minSpeed = 20;
+    private float maxSpeed = 50;
+    private float minSpeed = 10;
     // Rate of which the player character drops back down to the ground
     private int dropSpeed = 20;
 
@@ -28,18 +28,24 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     public float laneDistance = 4;
 
+    // Particle reference
     public ParticleSystem electricExplo;
+    
+    // Booleans for particle and player invulnerability
     bool particleSystemPlayed = false;
+    bool invulnerable = false;
 
     // Start is called before the first frame update
     void Start()
     {
+        // Get player Controller
         controller = GetComponent<CharacterController>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        // If the games no longer running return
         if (!GameManager.isGameRunning)
         {
             return;
@@ -48,12 +54,13 @@ public class PlayerController : MonoBehaviour
         // Gets the player moveing forward.
         direction.z = speed;
 
+        // Check for input
         checkInput();
 
         // Calculate where we should be in the future
-
         Vector3 targetPostition = transform.position.z * transform.forward + transform.position.y * transform.up;
 
+        // If statements decide if the player can move into which lanes
         if(desiredLane == 0)
         {
             targetPostition += Vector3.left * laneDistance;
@@ -67,9 +74,11 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        // Sets the player direction with a difference 
         Vector3 diff = targetPostition - transform.position;
         Vector3 moveDir = diff.normalized * 25 * Time.deltaTime;
 
+        // Ensure smooth movement 
         if (moveDir.sqrMagnitude < diff.sqrMagnitude)
         {
             controller.Move(moveDir);
@@ -83,11 +92,19 @@ public class PlayerController : MonoBehaviour
     // FixedUpdate called once per frame
     private void FixedUpdate()
     {
-        if(particleSystemPlayed == true)
+        // Checks for player invulnerability
+        if (invulnerable)
         {
-            electricExplo.Stop();
-            particleSystemPlayed = false;
+            // Makes a quick timer
+            float timer = 10;
+            while (timer > 0)
+            {
+                timer -= Time.deltaTime;
+            }
+            invulnerable = false;
+
         }
+
         if (!GameManager.isGameRunning)
         {
             return;
@@ -136,23 +153,62 @@ public class PlayerController : MonoBehaviour
     
     }
 
-    // Jump method increases the characters Y direction simulating a jump
+    /**
+     * Jump function to increase the characters Y direction simulating a jump
+     */
     private void Jump()
     {
         direction.y = jumpForce;
     }
 
+    /**
+     * On Collision function that registers what hit the player
+     */
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
+        // If what the player collided with was an Obstacle do..
         if (hit.gameObject.tag == "Obstacles")
         {
-            if (particleSystemPlayed == false) {
-                electricExplo.Play();
-                particleSystemPlayed = true;
-            }
-            
+            FindObjectOfType<AudioManager>().PlaySound("CollisionEffect");
+            // Start the Coroutine function PlayParticle passing electricExplo
+            StartCoroutine(PlayParticle(electricExplo));
+            // Destory the object the player hit
             Destroy(hit.gameObject);
-            speed = minSpeed;
+            
+            if (invulnerable == false) 
+                speed = minSpeed; // Set player speed back to minimum speed
+
+        } else if (hit.gameObject.tag == "PowerUp")
+        {
+            FindObjectOfType<AudioManager>().PlaySound("CollisionEffect");
+            // Start the Coroutine function PlayParticle passing electricExplo
+            StartCoroutine(PlayParticle(electricExplo));
+            // Destory the object the player hit
+            Destroy(hit.gameObject);
+            // Set player speed back to maximum speed x 2
+            speed = maxSpeed * 2;
+            // Makes the player invulnerable
+            invulnerable = true;
         }
     }
+
+    /**
+     * Coroutine Function to play a passed ParticleSystem
+     */
+    IEnumerator PlayParticle(ParticleSystem part)
+    {
+        // If the ParticleSystem is NOT playing then Play
+        if (!part.isPlaying)
+        {
+            part.Play();
+            yield return null;
+        } 
+        // If the ParticleSystem IS playing then Stop waiting .1 of a second
+        if (part.isPlaying)
+        {
+            part.Stop();
+            yield return new WaitForSeconds(.1f);
+        }
+    }
+
 }
